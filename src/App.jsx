@@ -38,7 +38,9 @@ async function readApiResponse(response, action) {
     );
   }
   if (!result) {
-    throw new Error(`${action} returned an empty response (HTTP ${response.status}).`);
+    throw new Error(
+      `${action} returned an empty response (HTTP ${response.status}).`,
+    );
   }
   return result;
 }
@@ -828,60 +830,6 @@ function App() {
               {submittingWish ? "Sending…" : "Send wishes"} <Send size={15} />
             </button>
           </form>
-        </section>
-
-        <section className="gift-section section-pad">
-          <div className="gift-heading">
-            <p className="eyebrow">GIFT BOX</p>
-            <h2>
-              Your love is <em>our greatest gift.</em>
-            </h2>
-            <p className="body-copy">{data.gift.description}</p>
-            <button
-              className="gift-open-button"
-              onClick={() => setGiftOpen((open) => !open)}
-              aria-expanded={giftOpen}
-            >
-              <Gift size={18} />
-              {giftOpen ? "Close gift box" : "Open gift box"}
-            </button>
-          </div>
-          {giftOpen && (
-            <div className="gift-details">
-              <h3>{data.gift.title}</h3>
-              {data.gift.accounts.length ? (
-                data.gift.accounts.map((account) => (
-                  <article
-                    className="account-card"
-                    key={`${account.bank}-${account.accountNumber}`}
-                  >
-                    <span>{account.bank}</span>
-                    <strong>{account.accountName}</strong>
-                    <code>{account.accountNumber}</code>
-                  </article>
-                ))
-              ) : (
-                <p className="account-pending">
-                  Account details have not been provided yet. Edit the{" "}
-                  <code>gift.accounts</code> list in src/invitationData.js to
-                  add them.
-                </p>
-              )}
-              <p className="gift-note">{data.gift.note}</p>
-              <div className="gift-whatsapp">
-                {data.gift.whatsappNumbers.map((number) => (
-                  <a
-                    key={number}
-                    href={`https://wa.me/${number.replace(/\D/g, "")}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    WhatsApp {number}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </section>
 
         <footer>
