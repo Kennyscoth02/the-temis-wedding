@@ -6,11 +6,5 @@
       "maxDuration": 10,
       "includeFiles": "server/schema.sql"
     }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  }
 }
