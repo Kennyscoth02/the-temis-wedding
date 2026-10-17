@@ -72,6 +72,69 @@ function Countdown() {
   );
 }
 
+function EventCalendar({ dateISO }) {
+  const [year, month, eventDay] = dateISO
+    .slice(0, 10)
+    .split("-")
+    .map(Number);
+  const monthName = new Date(year, month - 1, 1).toLocaleDateString(
+    undefined,
+    { month: "long", year: "numeric" },
+  );
+  const eventDate = new Date(year, month - 1, eventDay).toLocaleDateString(
+    undefined,
+    { weekday: "long", month: "long", day: "numeric", year: "numeric" },
+  );
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const firstWeekday = new Date(year, month - 1, 1).getDay();
+  const days = [
+    ...Array(firstWeekday).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
+  ];
+
+  return (
+    <div className="event-calendar">
+      <p className="eyebrow">OUR WEDDING DAY</p>
+      <h3>{monthName}</h3>
+      <table aria-label={`Wedding date calendar for ${monthName}`}>
+        <thead>
+          <tr>
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <th scope="col" key={day}>
+                {day}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: Math.ceil(days.length / 7) }, (_, week) => (
+            <tr key={week}>
+              {days.slice(week * 7, week * 7 + 7).map((day, index) => (
+                <td key={day ?? `empty-${week}-${index}`}>
+                  {day && (
+                    <span
+                      className={day === eventDay ? "event-day" : undefined}
+                      aria-current={day === eventDay ? "date" : undefined}
+                    >
+                      {day}
+                    </span>
+                  )}
+                </td>
+              ))}
+              {days.slice(week * 7, week * 7 + 7).length < 7 &&
+                Array.from(
+                  { length: 7 - days.slice(week * 7, week * 7 + 7).length },
+                  (_, index) => <td key={`trailing-${week}-${index}`} />,
+                )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="event-calendar-date">{eventDate}</p>
+    </div>
+  );
+}
+
 function GallerySlider({ photos, onSelect }) {
   const [index, setIndex] = useState(0);
   useEffect(() => {
@@ -706,6 +769,7 @@ function App() {
               </a>
             </article>
           </div>
+          <EventCalendar dateISO={data.dateISO} />
           <div className="countdown-panel">
             <p className="eyebrow light">COUNTING DOWN TO OUR DAY</p>
             <h3>We can't wait to celebrate with you.</h3>
@@ -830,6 +894,61 @@ function App() {
               {submittingWish ? "Sending…" : "Send wishes"} <Send size={15} />
             </button>
           </form>
+        </section>
+
+        <section className="gift-section section-pad">
+          <div className="gift-heading">
+            <p className="eyebrow">GIFT BOX</p>
+            <h2>
+              Your love is <em>our greatest gift.</em>
+            </h2>
+            <p className="body-copy">{data.gift.description}</p>
+            <button
+              className="gift-open-button"
+              onClick={() => setGiftOpen((open) => !open)}
+              aria-expanded={giftOpen}
+              aria-controls="gift-details"
+            >
+              <Gift size={18} />
+              {giftOpen ? "Close gift box" : "Open gift box"}
+            </button>
+          </div>
+          {giftOpen && (
+            <div className="gift-details" id="gift-details">
+              <h3>{data.gift.title}</h3>
+              {data.gift.accounts.length ? (
+                data.gift.accounts.map((account) => (
+                  <article
+                    className="account-card"
+                    key={`${account.bank}-${account.accountNumber}`}
+                  >
+                    <span>{account.bank}</span>
+                    <strong>{account.accountName}</strong>
+                    <code>{account.accountNumber}</code>
+                  </article>
+                ))
+              ) : (
+                <p className="account-pending">
+                  Account details have not been provided yet. Edit the{" "}
+                  <code>gift.accounts</code> list in src/invitationData.js to
+                  add them.
+                </p>
+              )}
+              <p className="gift-note">{data.gift.note}</p>
+              <div className="gift-whatsapp">
+                {data.gift.whatsappNumbers.map((number) => (
+                  <a
+                    key={number}
+                    href={`https://wa.me/${number.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    WhatsApp {number}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         <footer>

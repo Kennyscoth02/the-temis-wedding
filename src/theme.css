@@ -291,6 +291,67 @@
   border-color: #9aa9b7;
 }
 
+.event-calendar {
+  width: min(390px, 100%);
+  margin: 34px auto 0;
+  padding: 25px 22px;
+  border: 1px solid #d2d9df;
+  background: #faf9f5;
+  text-align: center;
+}
+
+.event-calendar .eyebrow {
+  margin-bottom: 8px;
+}
+
+.event-calendar h3 {
+  margin: 0 0 17px;
+  color: #0a2b55;
+  font: 400 29px 'Cormorant Garamond', serif;
+}
+
+.event-calendar table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  color: #43566d;
+  font-size: 12px;
+}
+
+.event-calendar th {
+  height: 32px;
+  color: #7f8997;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.event-calendar td {
+  height: 40px;
+  padding: 2px;
+}
+
+.event-calendar td span {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  margin: auto;
+  border-radius: 50%;
+}
+
+.event-calendar td .event-day {
+  background: #0a2b55;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 7px #0a2b5540;
+}
+
+.event-calendar-date {
+  margin: 15px 0 0;
+  color: #6b7580;
+  font-size: 11px;
+}
+
 .rsvp-banner {
   background: linear-gradient(135deg, #0a2b55, #061f41);
 }
