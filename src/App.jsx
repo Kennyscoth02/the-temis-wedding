@@ -19,6 +19,30 @@ import {
 } from "lucide-react";
 import { invitation as data } from "./invitationData";
 
+async function readApiResponse(response, action) {
+  const body = await response.text();
+  let result;
+  if (body) {
+    try {
+      result = JSON.parse(body);
+    } catch {
+      const contentType = response.headers.get("content-type") || "unknown";
+      throw new Error(
+        `${action} returned an invalid response (HTTP ${response.status}, ${contentType}).`,
+      );
+    }
+  }
+  if (!response.ok) {
+    throw new Error(
+      result?.error || `${action} failed (HTTP ${response.status}).`,
+    );
+  }
+  if (!result) {
+    throw new Error(`${action} returned an empty response (HTTP ${response.status}).`);
+  }
+  return result;
+}
+
 function Countdown() {
   const calculate = () => {
     const diff = Math.max(0, new Date(data.dateISO).getTime() - Date.now());
@@ -305,15 +329,15 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(entry),
       });
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || "The RSVP could not be saved.");
-      }
-      const result = await response.json();
+      const result = await readApiResponse(response, "RSVP submission");
       if (result.wish) setGuestbook((current) => [...current, result.wish]);
     } catch (error) {
       console.error("Could not submit RSVP.", error);
-      setRsvpError("We could not save your response. Please try again.");
+      setRsvpError(
+        error instanceof Error
+          ? `${error.message} Please check the deployment's /api/health endpoint and Vercel Function logs.`
+          : "We could not save your response. Please try again.",
+      );
       return;
     }
     setSubmitted(true);
@@ -398,12 +422,15 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(entry),
       });
-      if (!response.ok) throw new Error("Guestbook service unavailable");
-      const { wish } = await response.json();
+      const { wish } = await readApiResponse(response, "Guestbook submission");
       setGuestbook((current) => [...current, wish]);
     } catch (error) {
       console.error("Could not save the guestbook message.", error);
-      setWishError("Your message could not be saved. Please try again.");
+      setWishError(
+        error instanceof Error
+          ? `${error.message} Please try again.`
+          : "Your message could not be saved. Please try again.",
+      );
       setSubmittingWish(false);
       return;
     }
@@ -457,10 +484,7 @@ function App() {
   useEffect(() => {
     let active = true;
     fetch("/api/guestbook")
-      .then((response) => {
-        if (!response.ok) throw new Error("Guestbook service unavailable");
-        return response.json();
-      })
+      .then((response) => readApiResponse(response, "Guestbook request"))
       .then(({ wishes }) => {
         if (active) setGuestbook(wishes);
       })
