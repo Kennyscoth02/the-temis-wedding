@@ -8,11 +8,9 @@ export const invitation = {
   dateISO: "2026-11-14T10:00:00+01:00",
   ceremonyTime: "10:00 AM",
   receptionTime: "1:00 PM",
-  venue: "RCCG Victory Chapel Zonal Headquarters",
-  address:
-    "Iseoluwa Bus Stop, No. 2 Adepoju Crescent, Abule Egba, Ekoro Road, Lagos",
-  mapUrl:
-    "https://maps.google.com/?q=RCCG+Victory+Chapel+Zonal+Headquarters+Abule+Egba+Lagos",
+  venue: "Success Hall",
+  address: "Ekoro Road, Abule Egba, Lagos",
+  mapUrl: "https://maps.app.goo.gl/sH3WjmxHTPLseAhN8",
   coverPhoto: "/p3.jpeg",
   invitationImage: "/invite.jpeg",
   welcome:
