@@ -73,14 +73,11 @@ function Countdown() {
 }
 
 function EventCalendar({ dateISO }) {
-  const [year, month, eventDay] = dateISO
-    .slice(0, 10)
-    .split("-")
-    .map(Number);
-  const monthName = new Date(year, month - 1, 1).toLocaleDateString(
-    undefined,
-    { month: "long", year: "numeric" },
-  );
+  const [year, month, eventDay] = dateISO.slice(0, 10).split("-").map(Number);
+  const monthName = new Date(year, month - 1, 1).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
   const eventDate = new Date(year, month - 1, eventDay).toLocaleDateString(
     undefined,
     { weekday: "long", month: "long", day: "numeric", year: "numeric" },
@@ -312,6 +309,14 @@ function App() {
   const audioContextRef = useRef(null);
   const musicTimerRef = useRef(null);
   const musicNoteRef = useRef(0);
+  const normalizedWishName = wishName.trim().replace(/\s+/g, " ").toLowerCase();
+  const wishNameTaken =
+    normalizedWishName &&
+    guestbook.some(
+      (wish) =>
+        wish.name.trim().replace(/\s+/g, " ").toLowerCase() ===
+        normalizedWishName,
+    );
 
   useEffect(() => {
     if (!opened || !autoScroll || rsvpOpen || lightbox) return undefined;
@@ -842,16 +847,18 @@ function App() {
             Share a message or a blessing for the happy couple.
           </p>
           {guestbook.length > 0 && (
-            <div className="wishes">
-              {guestbook
-                .slice(-6)
-                .reverse()
-                .map((g, i) => (
-                  <blockquote key={`${g.createdAt || g.name}-${i}`}>
-                    <p>“{g.message}”</p>
-                    <cite>— {g.name}</cite>
-                  </blockquote>
-                ))}
+            <div
+              className="wishes"
+              role="region"
+              aria-label="Guestbook messages"
+              tabIndex={0}
+            >
+              {[...guestbook].reverse().map((g, i) => (
+                <blockquote key={`${g.createdAt || g.name}-${i}`}>
+                  <p>“{g.message}”</p>
+                  <cite>— {g.name}</cite>
+                </blockquote>
+              ))}
             </div>
           )}
           {wishSubmitted && (
@@ -873,7 +880,13 @@ function App() {
                 value={wishName}
                 onChange={(e) => setWishName(e.target.value)}
                 placeholder="Enter your name"
+                aria-invalid={Boolean(wishNameTaken)}
               />
+              {wishNameTaken && (
+                <span className="wish-error" role="status">
+                  This name has already left a message.
+                </span>
+              )}
             </label>
             <label>
               Your message
@@ -889,7 +902,7 @@ function App() {
             <button
               className="outline-button"
               type="submit"
-              disabled={submittingWish}
+              disabled={submittingWish || Boolean(wishNameTaken)}
             >
               {submittingWish ? "Sending…" : "Send wishes"} <Send size={15} />
             </button>
