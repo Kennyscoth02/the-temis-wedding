@@ -712,42 +712,158 @@ footer {
   cursor: wait;
 }
 
+.wishes-container {
+  width: min(720px, 100%);
+  margin: 28px auto 34px;
+}
+
+.wishes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #728499;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.wishes-scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #0a2b55;
+  font-size: 10px;
+}
+
 .wishes {
-  display: grid;
-  align-content: start;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
-  gap: 14px;
-  width: min(900px, 100%);
-  max-height: min(420px, 55vh);
-  margin: 34px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-height: 480px;
+  margin: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 2px 6px 2px 2px;
+  padding: 4px 10px 4px 4px;
   scrollbar-gutter: stable;
   text-align: left;
+  scrollbar-width: thin;
+  scrollbar-color: #c9b79e #eae5dc;
+}
+
+.wishes::-webkit-scrollbar {
+  width: 7px;
+}
+
+.wishes::-webkit-scrollbar-track {
+  background: #eae5dc;
+  border-radius: 4px;
+}
+
+.wishes::-webkit-scrollbar-thumb {
+  background: #c9b79e;
+  border-radius: 4px;
+}
+
+.wishes::-webkit-scrollbar-thumb:hover {
+  background: #a8947b;
 }
 
 .wishes blockquote {
   margin: 0;
-  padding: 20px;
+  padding: 22px 26px;
   border: 1px solid #d2d9df;
+  border-left: 4px solid #0a2b55;
   background: #faf9f5;
   text-align: left;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wishes blockquote:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(10, 43, 85, 0.07);
 }
 
 .wishes blockquote p {
   margin: 0 0 12px;
-  color: #4a5e73;
+  color: #3b4e63;
   font:
-    italic 17px/1.5 "Cormorant Garamond",
+    italic 18px/1.6 "Cormorant Garamond",
     serif;
   overflow-wrap: anywhere;
 }
 
+.wish-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .wishes cite {
   color: #0a2b55;
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   font-style: normal;
+}
+
+.wish-date {
+  color: #8c9ba5;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.wish-already-submitted {
+  width: min(540px, 100%);
+  margin: 28px auto 0;
+  padding: 30px 24px;
+  background: #fdfcf9;
+  border: 1px solid #dcd4c7;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.wish-already-submitted-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #f5ede2;
+  color: #9d3e35;
+  display: grid;
+  place-items: center;
+}
+
+.wish-already-submitted h3 {
+  font: 500 24px "Cormorant Garamond", serif;
+  color: #0a2b55;
+  margin: 0 0 10px;
+}
+
+.wish-already-submitted p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #637385;
+  margin: 0 0 14px;
+}
+
+.wish-already-submitted .submitted-as {
+  display: inline-block;
+  font-size: 11px;
+  color: #847565;
+  background: #f3ede2;
+  padding: 6px 14px;
+  border-radius: 14px;
 }
 
 .wish-success {

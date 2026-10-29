@@ -305,6 +305,20 @@ function App() {
   const [submittingWish, setSubmittingWish] = useState(false);
   const [guestbook, setGuestbook] = useState([]);
   const [lightbox, setLightbox] = useState(null);
+  const [hasSubmittedWish, setHasSubmittedWish] = useState(() => {
+    try {
+      return Boolean(localStorage.getItem("wedding-guestbook-submitted"));
+    } catch {
+      return false;
+    }
+  });
+  const [submittedAuthor, setSubmittedAuthor] = useState(() => {
+    try {
+      return localStorage.getItem("wedding-guestbook-author") || "";
+    } catch {
+      return "";
+    }
+  });
   const audioRef = useRef(null);
   const audioContextRef = useRef(null);
   const musicTimerRef = useRef(null);
@@ -400,7 +414,17 @@ function App() {
         body: JSON.stringify(entry),
       });
       const result = await readApiResponse(response, "RSVP submission");
-      if (result.wish) setGuestbook((current) => [...current, result.wish]);
+      if (result.wish) {
+        setGuestbook((current) => [...current, result.wish]);
+        try {
+          localStorage.setItem("wedding-guestbook-submitted", "true");
+          localStorage.setItem("wedding-guestbook-author", guestName.trim());
+        } catch {
+          // ignore
+        }
+        setHasSubmittedWish(true);
+        setSubmittedAuthor(guestName.trim());
+      }
     } catch (error) {
       console.error("Could not submit RSVP.", error);
       setRsvpError(
@@ -483,9 +507,14 @@ function App() {
 
   async function submitWish(e) {
     e.preventDefault();
+    if (hasSubmittedWish) {
+      setWishError("You have already shared a message. Thank you!");
+      return;
+    }
     setWishError("");
     setSubmittingWish(true);
-    const entry = { name: wishName.trim(), message: wishMessage.trim() };
+    const trimmedName = wishName.trim();
+    const entry = { name: trimmedName, message: wishMessage.trim() };
     try {
       const response = await fetch("/api/guestbook", {
         method: "POST",
@@ -494,6 +523,15 @@ function App() {
       });
       const { wish } = await readApiResponse(response, "Guestbook submission");
       setGuestbook((current) => [...current, wish]);
+      try {
+        localStorage.setItem("wedding-guestbook-submitted", "true");
+        localStorage.setItem("wedding-guestbook-author", trimmedName);
+      } catch {
+        // ignore
+      }
+      setHasSubmittedWish(true);
+      setSubmittedAuthor(trimmedName);
+      setWishSubmitted(true);
     } catch (error) {
       console.error("Could not save the guestbook message.", error);
       setWishError(
@@ -506,7 +544,6 @@ function App() {
     }
     setWishName("");
     setWishMessage("");
-    setWishSubmitted(true);
     setSubmittingWish(false);
   }
 
@@ -556,7 +593,23 @@ function App() {
     fetch("/api/guestbook")
       .then((response) => readApiResponse(response, "Guestbook request"))
       .then(({ wishes }) => {
-        if (active) setGuestbook(wishes);
+        if (active) {
+          setGuestbook(wishes);
+          try {
+            const author = localStorage.getItem("wedding-guestbook-author");
+            if (author) {
+              const matched = wishes.some(
+                (w) =>
+                  w.name.trim().toLowerCase() === author.trim().toLowerCase(),
+              );
+              if (matched) {
+                setHasSubmittedWish(true);
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
       })
       .catch((error) => {
         console.warn(
@@ -847,18 +900,39 @@ function App() {
             Share a message or a blessing for the happy couple.
           </p>
           {guestbook.length > 0 && (
-            <div
-              className="wishes"
-              role="region"
-              aria-label="Guestbook messages"
-              tabIndex={0}
-            >
-              {[...guestbook].reverse().map((g, i) => (
-                <blockquote key={`${g.createdAt || g.name}-${i}`}>
-                  <p>“{g.message}”</p>
-                  <cite>— {g.name}</cite>
-                </blockquote>
-              ))}
+            <div className="wishes-container">
+              <div className="wishes-header">
+                <span>All Wishes ({guestbook.length})</span>
+                {guestbook.length > 2 && (
+                  <span className="wishes-scroll-hint">
+                    Scroll to read all ({guestbook.length}) messages
+                  </span>
+                )}
+              </div>
+              <div
+                className="wishes"
+                role="region"
+                aria-label="Guestbook messages"
+                tabIndex={0}
+              >
+                {[...guestbook].reverse().map((g, i) => (
+                  <blockquote key={`${g.createdAt || g.name}-${i}`}>
+                    <p>“{g.message}”</p>
+                    <div className="wish-meta">
+                      <cite>— {g.name}</cite>
+                      {g.createdAt && (
+                        <span className="wish-date">
+                          {new Date(g.createdAt).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  </blockquote>
+                ))}
+              </div>
             </div>
           )}
           {wishSubmitted && (
@@ -871,42 +945,60 @@ function App() {
               {wishError}
             </p>
           )}
-          <form className="guestbook-form" onSubmit={submitWish}>
-            <label>
-              Your name
-              <input
-                required
-                maxLength="120"
-                value={wishName}
-                onChange={(e) => setWishName(e.target.value)}
-                placeholder="Enter your name"
-                aria-invalid={Boolean(wishNameTaken)}
-              />
-              {wishNameTaken && (
-                <span className="wish-error" role="status">
-                  This name has already left a message.
+          {hasSubmittedWish ? (
+            <div className="wish-already-submitted">
+              <div className="wish-already-submitted-icon">
+                <Heart size={20} fill="#9d3e35" />
+              </div>
+              <h3>Thank you for your blessings!</h3>
+              <p>
+                You have already shared a message for {data.partnerOne} &amp; {data.partnerTwo}.
+                Each guest can submit one message to the guestbook.
+              </p>
+              {submittedAuthor && (
+                <span className="submitted-as">
+                  Message sent as: <strong>{submittedAuthor}</strong>
                 </span>
               )}
-            </label>
-            <label>
-              Your message
-              <textarea
-                required
-                maxLength="1000"
-                rows="3"
-                value={wishMessage}
-                onChange={(e) => setWishMessage(e.target.value)}
-                placeholder="Write a wish for the couple…"
-              />
-            </label>
-            <button
-              className="outline-button"
-              type="submit"
-              disabled={submittingWish || Boolean(wishNameTaken)}
-            >
-              {submittingWish ? "Sending…" : "Send wishes"} <Send size={15} />
-            </button>
-          </form>
+            </div>
+          ) : (
+            <form className="guestbook-form" onSubmit={submitWish}>
+              <label>
+                Your name
+                <input
+                  required
+                  maxLength="120"
+                  value={wishName}
+                  onChange={(e) => setWishName(e.target.value)}
+                  placeholder="Enter your name"
+                  aria-invalid={Boolean(wishNameTaken)}
+                />
+                {wishNameTaken && (
+                  <span className="wish-error" role="status">
+                    This name has already left a message.
+                  </span>
+                )}
+              </label>
+              <label>
+                Your message
+                <textarea
+                  required
+                  maxLength="1000"
+                  rows="3"
+                  value={wishMessage}
+                  onChange={(e) => setWishMessage(e.target.value)}
+                  placeholder="Write a wish for the couple…"
+                />
+              </label>
+              <button
+                className="outline-button"
+                type="submit"
+                disabled={submittingWish || Boolean(wishNameTaken)}
+              >
+                {submittingWish ? "Sending…" : "Send wishes"} <Send size={15} />
+              </button>
+            </form>
+          )}
         </section>
 
         <section className="gift-section section-pad">

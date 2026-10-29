@@ -56,6 +56,12 @@ app.post("/api/rsvp", async (req, res) => {
   };
   try {
     const saved = await createRsvp(record);
+    if (saved.wish) {
+      res.setHeader(
+        "Set-Cookie",
+        "guestbook_submitted=1; Max-Age=31536000; Path=/; SameSite=Lax",
+      );
+    }
     res.status(201).json({ ok: true, rsvp: saved.rsvp, wish: saved.wish });
   } catch (error) {
     console.error("Could not save RSVP.", error);
@@ -106,6 +112,13 @@ app.get("/api/guestbook", async (_req, res) => {
 });
 
 app.post("/api/guestbook", async (req, res) => {
+  const cookieHeader = req.headers.cookie || "";
+  if (cookieHeader.includes("guestbook_submitted=1")) {
+    return res
+      .status(409)
+      .json({ error: "You have already left a guestbook message." });
+  }
+
   const { name, message } = req.body || {};
   if (
     typeof name !== "string" ||
@@ -136,6 +149,10 @@ app.post("/api/guestbook", async (req, res) => {
         .json({ error: "This name has already left a guestbook message." });
     }
     const saved = await createWish(wish);
+    res.setHeader(
+      "Set-Cookie",
+      "guestbook_submitted=1; Max-Age=31536000; Path=/; SameSite=Lax",
+    );
     res.status(201).json({ ok: true, wish: saved });
   } catch (error) {
     console.error("Could not save the guestbook message.", error);
